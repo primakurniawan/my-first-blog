@@ -17,4 +17,21 @@
         <h2>{{ post.title }}</h2>
         <p>{{ post.text|linebreaksbr }}</p>
     </article>
+
+    <h2>New comment</h2>
+    <form method="POST" class="post-form">{% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="save btn btn-secondary">Save</button>
+    </form>
+
+    {% for comment in comments %}
+        <article class="comment">
+            <time class="date">
+                {{ comment.created_at }}
+            </time>
+            <h3>{{ comment.user.username }}</h3>
+            <p>{{ comment.content|linebreaksbr }}</p>
+        </article>
+    {% endfor %}
+
 {% endblock %}
