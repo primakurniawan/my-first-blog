@@ -1,16 +1,30 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Post, Comment
+from .models import Post, Comment, Category
 from django.utils import timezone
-from .forms import PostForm, CommentForm
+from .forms import PostForm, CommentForm, GetForm
+from django.db.models import Count
+
 
 # Create your views here.
 
 
 def post_list(request):
+    form = GetForm()
     posts = Post.objects.filter(
         published_date__lte=timezone.now()).order_by('published_date')
+    categories = Category.objects.all()
+    title = request.GET.get('title', False)
+    category = request.GET.get('category', False)
+    if title != '' and title:
+        posts = posts.filter(title__contains=title)
+        categories = Category.objects.filter(post__title__contains=title)
 
-    return render(request, 'blog/post_list.html', {'posts': posts})
+    if category != '' and category:
+        posts = posts.filter(category__pk=category)
+        categories = Category.objects.filter(post__category__pk=category)
+
+    categories = categories.annotate(num_article=Count('post'))
+    return render(request, 'blog/post_list.html', {'posts': posts, 'form': form, 'categories': categories})
 
 
 def post_detail(request, pk):
@@ -30,8 +44,9 @@ def post_detail(request, pk):
         post = get_object_or_404(Post, pk=pk)
         form = CommentForm(instance=post)
         comments = Comment.objects.all().filter(post__pk=pk)
+        categories = Category.objects.filter(post__id=2)
 
-        return render(request, 'blog/post_detail.html', {'post': post, 'comments': comments, 'form': form})
+        return render(request, 'blog/post_detail.html', {'post': post, 'comments': comments, 'form': form, 'categories': categories})
 
 
 def post_new(request):
