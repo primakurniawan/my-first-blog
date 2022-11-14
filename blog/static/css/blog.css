@@ -73,3 +73,14 @@ h4 {
     color: #FFFFFF;
     background-color: #C25100;
 }
+
+
+#id_categories{
+    list-style: none;
+}
+
+#id_categories  li  label{
+    display: inline-flex;
+    align-items:center;
+    justify-content: flex-end;
+}

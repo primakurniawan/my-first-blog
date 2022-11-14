@@ -5,21 +5,21 @@ from .models import Post, Comment, Category
 
 class GetForm(forms.ModelForm):
     title = forms.CharField(required=False)
-    category = forms.ModelMultipleChoiceField(
-        queryset=Category.objects.all(), widget=forms.CheckboxSelectMultiple())
+    categories = forms.ModelMultipleChoiceField(
+        queryset=Category.objects.all(), widget=forms.CheckboxSelectMultiple(attrs={'class': "categories"}))
 
     class Meta:
         model = Post
-        fields = ('title', 'category')
+        fields = ('title', 'categories')
 
 
 class PostForm(forms.ModelForm):
-    category = forms.ModelMultipleChoiceField(
-        queryset=Category.objects.all(), widget=forms.CheckboxSelectMultiple())
+    categories = forms.ModelMultipleChoiceField(
+        queryset=Category.objects.all(), widget=forms.CheckboxSelectMultiple(attrs={'class': "categories"}))
 
     class Meta:
         model = Post
-        fields = ('category', 'title', 'text')
+        fields = ('categories', 'title', 'text')
 
 
 class CommentForm(forms.ModelForm):

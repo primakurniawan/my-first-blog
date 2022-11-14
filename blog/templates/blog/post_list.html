@@ -3,15 +3,23 @@
 {% block content %}
 <form method="GET" class="post-form">
     {{ form.as_p }}
-    <button type="submit" class="save btn btn-secondary">Save</button>
+    <button type="submit" class="save btn btn-secondary">Search</button>
 </form>
 
+</br>
+</br>
+
 {% for category in categories %}
-    <article class="post">
-        <h4>{{ category.name }}</h4>
-        <p>{{ category.num_article|linebreaksbr }}</p>
-    </article>
+<button type="button" class="btn btn-sm btn-secondary position-relative" disabled>
+    {{ category.name }}
+    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+        {{ category.num_article}}
+    </span>
+  </button>
 {% endfor %}
+
+</br>
+</br>
 
 {% for post in posts %}
     <article class="post">

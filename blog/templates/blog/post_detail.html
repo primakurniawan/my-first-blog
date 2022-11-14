@@ -15,19 +15,19 @@
             </time>
         {% endif %}
         <h2>{{ post.title }}</h2>
-        <small class="text-danger">
-            {% for category in categories %}
-                {{ category.name }}
-            {% endfor %}
-
-        </small>
+        
+        {% for category in categories %}
+            <button type="button" class="btn btn-sm btn-secondary position-relative" disabled>
+            {{ category.name }}
+            </button>
+        {% endfor %}
         <p>{{ post.text|linebreaksbr }}</p>
     </article>
 
     <h2>New comment</h2>
     <form method="POST" class="post-form">{% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="save btn btn-secondary">Save</button>
+        <button type="submit" class="save btn btn-secondary">Add Comment</button>
     </form>
 
     {% for comment in comments %}
