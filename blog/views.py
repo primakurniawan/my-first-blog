@@ -12,14 +12,18 @@ from django.http import QueryDict
 def post_list(request):
     form = GetForm()
     posts = Post.objects.filter(
-        published_date__lte=timezone.now()).order_by('published_date')
+        published_date__lte=timezone.now()).order_by('published_date').prefetch_related('categories').select_related('author')
+    for post in posts:
+        post.categories_obj = [
+            categories for categories in post.categories.all()]
     categories = Category.objects.all()
     title = request.GET.get('title', False)
     if 'categories' in QueryDict(request.GET.urlencode(), mutable=True):
-        categoriesSelected = QueryDict(request.GET.urlencode(), mutable=True).pop('categories') 
-        categoriesSelected = [eval(i) for i in categoriesSelected] 
+        categoriesSelected = QueryDict(
+            request.GET.urlencode(), mutable=True).pop('categories')
+        categoriesSelected = [eval(i) for i in categoriesSelected]
     else:
-        categoriesSelected= []
+        categoriesSelected = []
     print(categoriesSelected)
     if title != '' and title:
         posts = posts.filter(title__contains=title)
@@ -27,9 +31,11 @@ def post_list(request):
 
     if categoriesSelected != [] and categoriesSelected:
         posts = posts.filter(categories__pk__in=categoriesSelected).distinct()
-        categories = Category.objects.filter(post__categories__pk__in=categoriesSelected).distinct()
+        categories = Category.objects.filter(
+            post__categories__pk__in=categoriesSelected).distinct()
 
-    categories = categories.annotate(num_article=Count('post', distinct=True)).distinct()
+    categories = categories.annotate(
+        num_article=Count('post', distinct=True)).distinct()
     return render(request, 'blog/post_list.html', {'posts': posts, 'form': form, 'categories': categories})
 
 
@@ -47,25 +53,34 @@ def post_detail(request, pk):
             comment.save()
             return redirect('post_detail', pk=pk)
     else:
-        post = get_object_or_404(Post, pk=pk)
+        post = Post.objects.select_related(
+            'author').prefetch_related('categories').get(pk=pk)
+        categories = [
+            categories for categories in post.categories.all()]
+        comments = [
+            comments for comments in post.comments.all()]
         form = CommentForm(instance=post)
-        comments = Comment.objects.all().filter(post__pk=pk)
-        categories = Category.objects.filter(post__id=pk)
 
-        return render(request, 'blog/post_detail.html', {'post': post, 'comments': comments, 'form': form, 'categories': categories})
+        return render(request, 'blog/post_detail.html', {'post': post,
+                                                         'comments': comments,
+                                                         'form': form,
+                                                         'categories': categories
+                                                         })
 
 
 def post_new(request):
     if request.method == "POST":
         form = PostForm(request.POST)
         if 'categories' in QueryDict(request.POST.urlencode(), mutable=True):
-            categoriesSelected = QueryDict(request.POST.urlencode(), mutable=True).pop('categories') 
-            categoriesSelected = [eval(i) for i in categoriesSelected] 
+            categoriesSelected = QueryDict(
+                request.POST.urlencode(), mutable=True).pop('categories')
+            categoriesSelected = [eval(i) for i in categoriesSelected]
         else:
-            categoriesSelected= []
+            categoriesSelected = []
 
         if categoriesSelected != [] and categoriesSelected:
-            categories = Category.objects.filter(post__categories__pk__in=categoriesSelected)
+            categories = Category.objects.filter(
+                post__categories__pk__in=categoriesSelected)
             print(categories)
 
         if form.is_valid():
@@ -85,15 +100,16 @@ def post_edit(request, pk):
     if request.method == "POST":
         form = PostForm(request.POST, instance=post)
         if 'categories' in QueryDict(request.POST.urlencode(), mutable=True):
-            categoriesSelected = QueryDict(request.POST.urlencode(), mutable=True).pop('categories') 
-            categoriesSelected = [eval(i) for i in categoriesSelected] 
+            categoriesSelected = QueryDict(
+                request.POST.urlencode(), mutable=True).pop('categories')
+            categoriesSelected = [eval(i) for i in categoriesSelected]
         else:
-            categoriesSelected= []
+            categoriesSelected = []
 
         if categoriesSelected != [] and categoriesSelected:
-            categories = Category.objects.filter(post__categories__pk__in=categoriesSelected)
+            categories = Category.objects.filter(
+                post__categories__pk__in=categoriesSelected)
             print(categories)
-
 
         if form.is_valid():
             post = form.save(commit=False)

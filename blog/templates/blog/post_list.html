@@ -27,6 +27,12 @@
             {{ post.published_date }}
         </time>
         <h2><a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h2>
+        <p>Created by <i class="muted">{{ post.author.username }}</i></p>
+        {% for category in post.categories_obj %}
+            <button type="button" class="btn btn-sm btn-secondary position-relative" disabled>
+            {{ category.name }}
+            </button>
+        {% endfor %}
         <p>{{ post.text|linebreaksbr }}</p>
     </article>
 {% endfor %}
